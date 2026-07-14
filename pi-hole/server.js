@@ -10,11 +10,10 @@ const PORT = 53;
 // Cloudflare public DNS resolver
 const UPSTREAM_DNS = '1.1.1.1';
 const UPSTREAM_PORT = 53;
-const upstreamSocket = dgram.createSocket('udp4');
 
 // Received a DNS packets to query
 server.on('message', (msg, rinfo) => {
-    const transactionID = msg.readUint16BE(0)
+    // const transactionID = msg.readUint16BE(0)
     
     // Parse Domain
     var offset = 12;
@@ -32,19 +31,19 @@ server.on('message', (msg, rinfo) => {
     const isAdDomain = list.queryDomain(domain);  // Is the domain in the block list?
     
     if (!isAdDomain) {  // Not an Ad so resolve with Cloudflare
-        const tempSocket = dgram.createSocket('udp4')
-        tempSocket.send(msg, UPSTREAM_PORT, UPSTREAM_DNS, (err) => {  // ask cloudlfare for the ip
+        const upstreamSocket = dgram.createSocket('udp4')
+        upstreamSocket.send(msg, UPSTREAM_PORT, UPSTREAM_DNS, (err) => {  // ask cloudlfare for the ip
             if (err) console.error("Failed to resolve domain with error:", err);
         })
-        tempSocket.on('message', (upstreamResponse) => {  // send it back to the client
+        upstreamSocket.on('message', (upstreamResponse) => {  // send it back to the client
             server.send(upstreamResponse, rinfo.port, rinfo.address, (err) => {
                 if (err) console.error("Error returning answer to client:", err);
-                tempSocket.close();
+                upstreamSocket.close();
             })
         })
-        tempSocket.on('error', (err) => {  // handle errors
+        upstreamSocket.on('error', (err) => {  // handle errors
             console.error("Temporary socket error:", err);
-            tempSocket.close();
+            upstreamSocket.close();
         });
     } else {  // is an Add so respond with 0.0.0.0
         const responseBuffer = Buffer.from(msg);
