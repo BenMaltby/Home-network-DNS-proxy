@@ -1,7 +1,5 @@
 import dgram from 'dgram';
 import BlockList from './DNSBlockList.js';
-// import readline from 'node:readline';
-// import { Readable } from 'node:stream';
 
 const list = new BlockList();
 const server = dgram.createSocket('udp4')
