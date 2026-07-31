@@ -40,10 +40,10 @@ server.on('message', (msg, rinfo) => {
             })
         })
         upstreamSocket.on('error', (err) => {  // handle errors
-            console.error("Temporary socket error:", err);
+            console.error("Upstream socket error:", err);
             upstreamSocket.close();
         });
-    } else {  // is an Add so respond with 0.0.0.0
+    } else {  // is an Ad so respond with 0.0.0.0
         const responseBuffer = Buffer.from(msg);
         responseBuffer[2] |= 0x80;  // Set QR flag to 1
         responseBuffer[3] = (responseBuffer[3] & 0xF0) | 0x03;  // Change RCODE to 3 (NXDOMAIN)
