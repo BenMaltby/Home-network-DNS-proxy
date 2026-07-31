@@ -1,9 +1,20 @@
 import dgram from 'dgram';
 import BlockList from './DNSBlockList.js';
+import LocalRecords from './LocalRecords.js';
+import Stats from './Stats.js';
+import createApi from './api.js';
+import { detectLanIp } from './lanIp.js';
+import { buildARecordResponse, buildEmptyResponse, buildNXDomainResponse } from './DNSAnswer.js';
+
+const LOCAL_TLD = 'home';
 
 const list = new BlockList();
 const server = dgram.createSocket('udp4')
-const PORT = 53;
+const PORT = Number(process.env.DNS_PORT) || 53;
+
+const lanIp = detectLanIp();
+const localRecords = new LocalRecords(lanIp);
+const stats = new Stats();
 
 // Cloudflare public DNS resolver
 const UPSTREAM_DNS = '1.1.1.1';
@@ -12,7 +23,7 @@ const UPSTREAM_PORT = 53;
 // Received a DNS packets to query
 server.on('message', (msg, rinfo) => {
     // const transactionID = msg.readUint16BE(0)
-    
+
     // Parse Domain
     var offset = 12;
     var domain = []
@@ -23,11 +34,29 @@ server.on('message', (msg, rinfo) => {
             part += String.fromCharCode(msg.readUint8(i))
         }
         offset += run + 1
-        domain.unshift(part)
-    } 
+        domain.unshift(part.toLowerCase())
+    }
 
-    const isAdDomain = list.queryDomain(domain);  // Is the domain in the block list?
-    
+    const questionEnd = offset + 5; // null terminator + QTYPE(2) + QCLASS(2)
+    const qtype = msg.readUInt16BE(offset + 1);
+    const hostname = domain.slice().reverse().join('.');
+
+    if (domain[0] === LOCAL_TLD) {  // Local .home hostname - never touches the blocklist/upstream
+        const ip = localRecords.lookup(hostname);
+        const response = ip && qtype === 1 ? buildARecordResponse(msg, questionEnd, ip)
+                        : ip ? buildEmptyResponse(msg, questionEnd)
+                        : buildNXDomainResponse(msg, questionEnd);
+
+        server.send(response, rinfo.port, rinfo.address, (err) => {
+            if (err) console.error("Failed to send local DNS response:", err);
+        });
+        stats.record({ domain: hostname, client: rinfo.address, blocked: false, local: true });
+        return;
+    }
+
+    const isAdDomain = !stats.isPaused() && list.queryDomain(domain);  // Is the domain in the block list?
+    stats.record({ domain: hostname, client: rinfo.address, blocked: isAdDomain });
+
     if (!isAdDomain) {  // Not an Ad so resolve with Cloudflare
         const upstreamSocket = dgram.createSocket('udp4')
         upstreamSocket.send(msg, UPSTREAM_PORT, UPSTREAM_DNS, (err) => {  // ask cloudlfare for the ip
@@ -53,7 +82,7 @@ server.on('message', (msg, rinfo) => {
 
         server.send(responseBuffer, rinfo.port, rinfo.address, (err) => {
             if (err) console.error("Failed to send NXDOMAIN:", err);
-            else console.log(`Blocked: ${domain}`);
+            else console.log(`Blocked: ${hostname}`);
         });
     } 
 })
@@ -62,6 +91,16 @@ server.on('listening', () => {
     const address = server.address()
     console.log(`Server listening ${address.address}:${address.port}`)
 })
+
+const HTTP_PORT = Number(process.env.HTTP_PORT) || 80;
+const app = createApi({
+    stats,
+    blockList: list,
+    localRecords,
+    getLanIp: () => lanIp,
+    reloadBlockList: () => list.reload(),
+});
+app.listen(HTTP_PORT, '0.0.0.0', () => console.log(`Dashboard listening on ${HTTP_PORT}`));
 
 const isLoaded = await list.loadBlockList()
 if (isLoaded) {

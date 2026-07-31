@@ -7,6 +7,8 @@ export default class BlockList {
     constructor() {
         this.DNSBlockList = new Map()
         this.size = 0;
+        this.sourceUrl = BLOCKLIST_URL;
+        this.loadedAt = null;
     }
 
     async loadBlockList() {
@@ -14,24 +16,31 @@ export default class BlockList {
             console.log(`Fetching block list...`)
             const res = await fetch(BLOCKLIST_URL);
             if (!res.ok) {throw new Error(`Failed to fetch block list: ${res.statusText}`)}
-            
+
             const rl = readline.createInterface({
                 input: Readable.from(res.body),
                 crlfDelay: Infinity
             })
-            
+
             console.log(`Loading block list into memory...`)
             for await (const line of rl) {
                 this.insertDomain(line);
             }
-            
+
             console.log(`Block List is ready for use!`)
-            
+            this.loadedAt = Date.now();
+
         } catch (e) {
             console.error(e);
         }
-    
+
         return true;
+    }
+
+    async reload() {
+        this.DNSBlockList = new Map();
+        this.size = 0;
+        return this.loadBlockList();
     }
     
     insertDomain(domain) {

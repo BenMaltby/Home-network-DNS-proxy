@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:3000'  // Will need to change this because the express server isn't setup
+      '/api': 'http://localhost:80'
     }
   }
 })

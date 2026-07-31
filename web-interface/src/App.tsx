@@ -1,12 +1,23 @@
-
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import AppShell from './components/layout/AppShell';
+import Overview from './pages/Overview';
+import QueryLog from './pages/QueryLog';
+import Blocklist from './pages/Blocklist';
+import LocalDns from './pages/LocalDns';
+import Settings from './pages/Settings';
 
 export default function App() {
-
   return (
-    <div className="min-h-screen bg-gray-500">
-      <div className="bg-gray-900 text-white p-4">
-        <h1 className="text-3xl font-bold">DNS Dashboard</h1>
-      </div>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<Overview />} />
+          <Route path="queries" element={<QueryLog />} />
+          <Route path="blocklist" element={<Blocklist />} />
+          <Route path="local-dns" element={<LocalDns />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
