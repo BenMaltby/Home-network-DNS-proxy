@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
+html {
+  color-scheme: dark;
+}
+
+html,
 body {
   margin: 0;
   padding: 0;
+  background-color: #030712; /* gray-950, matches AppShell's root background */
 }

@@ -40,7 +40,10 @@ export default function LocalDns() {
         touching the blocklist or upstream resolver.
       </p>
 
-      <form onSubmit={handleAdd} className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-800 bg-gray-900 p-4">
+      <form
+        onSubmit={handleAdd}
+        className="flex flex-col gap-3 rounded-lg border border-gray-800 bg-gray-900 p-4 sm:flex-row sm:flex-wrap sm:items-end"
+      >
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500" htmlFor="hostname">
             Hostname
@@ -50,7 +53,7 @@ export default function LocalDns() {
             value={hostname}
             onChange={(e) => setHostname(e.target.value)}
             placeholder="nas.home"
-            className="rounded-md border border-gray-700 bg-gray-950 px-2 py-1.5 text-sm text-gray-200"
+            className="w-full rounded-md border border-gray-700 bg-gray-950 px-2 py-1.5 text-sm text-gray-200 sm:w-48"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -62,13 +65,13 @@ export default function LocalDns() {
             value={ip}
             onChange={(e) => setIp(e.target.value)}
             placeholder="192.168.1.50"
-            className="rounded-md border border-gray-700 bg-gray-950 px-2 py-1.5 text-sm text-gray-200"
+            className="w-full rounded-md border border-gray-700 bg-gray-950 px-2 py-1.5 text-sm text-gray-200 sm:w-48"
           />
         </div>
         <button
           type="submit"
           disabled={busy}
-          className="flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-sm font-medium text-gray-950 hover:bg-emerald-400 disabled:opacity-50"
+          className="flex items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-sm font-medium text-gray-950 hover:bg-emerald-400 disabled:opacity-50 sm:w-auto"
         >
           <Plus size={16} />
           Add
@@ -77,7 +80,7 @@ export default function LocalDns() {
       </form>
 
       <div className="overflow-x-auto rounded-lg border border-gray-800">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[420px] text-left text-sm">
           <thead className="bg-gray-900 text-gray-400">
             <tr>
               <th className="px-4 py-2 font-medium">Hostname</th>
@@ -88,8 +91,8 @@ export default function LocalDns() {
           <tbody className="divide-y divide-gray-800">
             {(data ?? []).map((record) => (
               <tr key={record.hostname} className="text-gray-300">
-                <td className="px-4 py-2 font-mono">{record.hostname}</td>
-                <td className="px-4 py-2 text-gray-500">{record.ip}</td>
+                <td className="px-4 py-2 font-mono whitespace-nowrap">{record.hostname}</td>
+                <td className="px-4 py-2 whitespace-nowrap text-gray-500">{record.ip}</td>
                 <td className="px-4 py-2 text-right">
                   <button
                     type="button"

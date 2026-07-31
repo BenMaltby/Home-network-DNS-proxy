@@ -27,17 +27,17 @@ export default function QueryLog() {
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">Query Log</h1>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2 rounded-md border border-gray-700 bg-gray-900 px-3 py-1.5">
-          <Search size={16} className="text-gray-500" />
+          <Search size={16} className="shrink-0 text-gray-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Filter by domain or client IP"
-            className="w-64 bg-transparent text-sm text-gray-200 outline-none placeholder:text-gray-600"
+            className="w-full bg-transparent text-sm text-gray-200 outline-none placeholder:text-gray-600 sm:w-64"
           />
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {(['all', 'blocked', 'allowed', 'local'] as StatusFilter[]).map((option) => (
             <button
               key={option}
@@ -54,7 +54,7 @@ export default function QueryLog() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-gray-800">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-gray-900 text-gray-400">
             <tr>
               <th className="px-4 py-2 font-medium">Time</th>
@@ -69,8 +69,8 @@ export default function QueryLog() {
                 <td className="px-4 py-2 whitespace-nowrap text-gray-500">
                   {new Date(entry.timestamp).toLocaleTimeString()}
                 </td>
-                <td className="px-4 py-2 font-mono">{entry.domain}</td>
-                <td className="px-4 py-2 text-gray-500">{entry.client}</td>
+                <td className="px-4 py-2 font-mono whitespace-nowrap">{entry.domain}</td>
+                <td className="px-4 py-2 whitespace-nowrap text-gray-500">{entry.client}</td>
                 <td className="px-4 py-2">
                   {entry.local ? (
                     <span className="rounded bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-400">local</span>

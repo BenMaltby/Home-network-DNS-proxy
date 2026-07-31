@@ -27,7 +27,7 @@ export default function Blocklist() {
           <div className="text-xs uppercase tracking-wide text-gray-500">Source</div>
           <div className="mt-1 break-all text-sm text-gray-300">{data?.sourceUrl ?? '—'}</div>
         </div>
-        <div className="flex gap-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
           <div>
             <div className="text-xs uppercase tracking-wide text-gray-500">Entries (reported)</div>
             <div className="mt-1 text-2xl font-semibold">{data ? data.size.toLocaleString() : '—'}</div>
